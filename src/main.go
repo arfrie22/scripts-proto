@@ -2,19 +2,28 @@ package main
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
+
+	"scripts-proto/src/k8s"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/joho/godotenv"
-	"scripts-proto/src/k8s"
 )
+
+// Embed a single file
+//
+//go:embed public/index.html
+var indexFile embed.FS
 
 var validate = validator.New()
 
@@ -76,7 +85,7 @@ func main() {
 	app.Use(cors.New())
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("scripts.mkr.cx")
+		return filesystem.SendFile(c, http.FS(indexFile), "public/index.html")
 	})
 
 	app.Get("/validate", func(c *fiber.Ctx) error {
