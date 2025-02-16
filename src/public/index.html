@@ -158,6 +158,11 @@
             })
             })
             .then(response => {
+                if (response.status != 200) {
+                    showAlert();
+                    return;
+                }
+
                 response.json().then(json => {
                     showCreated();
                 })
