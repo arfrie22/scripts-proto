@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -70,14 +72,63 @@ func main() {
 		return c.SendString("scripts.mkr.cx")
 	})
 
-	app.Get("/validate", func(c *fiber.Ctx) error {
+	api := app.Group("api")
+
+	api.Get("/login", func(c *fiber.Ctx) error {
+		cookie := c.Cookies("token", "")
+		if cookie == "" {
+			// Not logged in
+			return c.Redirect(os.Getenv("LEASH_URL") + "auth/login?return=" + os.Getenv("SCRIPTS_URL") + "/api/callback&state=auth")
+		} else {
+			return c.Redirect("/")
+		}
+	})
+
+	api.Get("/callback", func(c *fiber.Ctx) error {
 		var request struct {
-			Container string `query:"container" validate:"required"`
+			Token     string `query:"token" validate:"required"`
+			State     string `query:"state" validate:"required"`
+			ExpiresAt string `query:"expires_at" validate:"required"`
 		}
 
+		if err := c.QueryParser(&request); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": err.Error(),
+			})
+		}
+
+		{
+			errors := ValidateStruct(request)
+			if errors != nil {
+				return c.Status(fiber.StatusBadRequest).JSON(errors)
+			}
+		}
+
+		expires, err := time.Parse(time.RFC3339, request.ExpiresAt)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).SendString("Bad expires time")
+		}
+
+		c.Cookie(&fiber.Cookie{
+			Name:    "token",
+			Value:   request.Token,
+			Path:    "/",
+			Expires: expires,
+		})
+
+		return c.Redirect("/")
+	})
+
+	validate := api.Group("validate")
+
+	validate.Get("image", func(c *fiber.Ctx) error {
 		arch := []string{
 			"linux/amd64",
 			"linux/arm64",
+		}
+
+		var request struct {
+			Container string `query:"container" validate:"required"`
 		}
 
 		if err := c.QueryParser(&request); err != nil {
