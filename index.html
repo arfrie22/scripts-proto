@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Container Deployment Form</title>
+    <!-- Include Tailwind CSS and DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div class="container mx-auto p-4 max-w-md">
+        <form class="card bg-base-100 shadow-xl p-6">
+            <h2 class="text-2xl font-bold mb-6">Container Deployment</h2>
+
+            <!-- Project Name Input -->
+            <div class="form-control w-full mb-4">
+                <label class="label">
+                    <span class="label-text">Project Name</span>
+                </label>
+                <input 
+                    type="text" 
+                    placeholder="my-awesome-project" 
+                    class="input input-bordered w-full" 
+                    id="projectName"
+                    required
+                />
+            </div>
+
+            <!-- Subdomain Input -->
+            <div class="form-control w-full mb-4">
+                <label class="label">
+                    <span class="label-text">Subdomain</span>
+                </label>
+                <label class="input input-bordered w-full flex items-center gap-2">
+                    <input 
+                        type="text" 
+                        placeholder="myapp" 
+                        class="flex-1" 
+                        id="subdomain"
+                        required
+                    />
+                    .scripts.mkr.cx
+                  </label>
+                
+            </div>
+
+            <!-- Container Image Input -->
+            <div class="form-control w-full mb-4">
+                <label class="label">
+                    <span class="label-text">Container Image</span>
+                </label>
+                <input 
+                    type="text" 
+                    placeholder="nginx:latest" 
+                    class="input input-bordered w-full" 
+                    id="containerImage"
+                    required
+                />
+            </div>
+
+            <!-- Container Port Input -->
+            <div class="form-control w-full mb-6">
+                <label class="label">
+                    <span class="label-text">Container Port</span>
+                </label>
+                <input 
+                    type="number" 
+                    placeholder="80" 
+                    class="input input-bordered w-full" 
+                    id="containerPort"
+                    required
+                />
+            </div>
+
+            <!-- Submit Button -->
+            <button class="btn btn-primary w-full">Deploy Container</button>
+        </form>
+
+        <!-- Alert Component (Hidden by default) -->
+        <div id="alert" class="alert alert-error mb-4 hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Invalid input! Please check your form data.</span>
+        </div>
+
+        <!-- Success Alert Component (Hidden by default) -->
+        <div id="successAlert" class="alert alert-success mb-4 hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Container deployment created successfully!</span>
+        </div>
+    </div>
+    
+
+    <script>
+        // Function to show the alert
+        function showAlert() {
+            const alert = document.getElementById('alert');
+            alert.classList.remove('hidden');
+
+            // Hide the alert after 5 seconds
+            setTimeout(() => {
+                alert.classList.add('hidden');
+            }, 5000);
+        }
+
+        function showCreated() {
+            const alert = document.getElementById('successAlert');
+            alert.classList.remove('hidden');
+
+            // Hide the alert after 5 seconds
+            setTimeout(() => {
+                alert.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Function to validate form data
+        function validateForm(formData) {
+            // Add your validation logic here
+            // This is a simple example - modify according to your needs
+            if (!formData.containerImage || 
+                !formData.subdomain || 
+                !formData.projectName || 
+                !formData.containerPort) {
+                return false;
+            }
+            return true;
+        }
+
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = {
+                containerImage: document.getElementById('containerImage').value,
+                subdomain: document.getElementById('subdomain').value,
+                projectName: document.getElementById('projectName').value,
+                containerPort: document.getElementById('containerPort').value
+            };
+
+            if (!validateForm(formData)) {
+                showAlert();
+                return;
+            }
+            
+            fetch('/deployments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                project: formData.projectName,
+                domain: formData.subdomain + '.scripts.mkr.cx',
+                port: formData.containerPort,
+                image: formData.containerImage,
+            })
+            })
+            .then(response => {
+                response.json().then(json => {
+                    showCreated();
+                })
+                .catch(error => {
+                    showAlert();
+                    console.error('Error:', error);
+                });
+            })
+            .catch(error => {
+                showAlert();
+                console.error('Error:', error);
+            });
+
+        });
+    </script>
+</body>
+</html>
