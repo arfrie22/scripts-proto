@@ -1,0 +1,82 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>App Platform</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Views will be dynamically inserted here -->
+    </div>
+
+    <!-- Templates -->
+    <template id="login-view">
+        <div class="login-container">
+            <h1>Login</h1>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </template>
+
+    <template id="apps-list-view">
+        <div class="apps-container">
+            <div class="header">
+                <h1>Your Applications</h1>
+                <button id="newAppBtn" class="primary-button">Create New App</button>
+            </div>
+            <div id="appsList" class="apps-grid"></div>
+        </div>
+    </template>
+
+    <template id="create-app-view">
+        <div class="create-app-container">
+            <h1>Deploy New App</h1>
+            <form id="deployForm">
+                <div class="form-group">
+                    <label for="projectName">Project Name:</label>
+                    <input type="text" id="projectName" required>
+                    <div id="projectNameError" class="error"></div>
+                    <div id="projectNameSuccess" class="success">Project name is available!</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="subdomain">Subdomain:</label>
+                    <div class="domain-input">
+                        <input type="text" id="subdomain" required>
+                        <span class="domain-suffix">.scripts.mkr.cx</span>
+                    </div>
+                    <div id="subdomainError" class="error"></div>
+                    <div id="subdomainSuccess" class="success">Subdomain is available!</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="containerImage">Container Image:</label>
+                    <input type="text" id="containerImage" required>
+                    <div id="containerError" class="error"></div>
+                    <div id="containerSuccess" class="success">Image is valid!</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="localPort">Local Port:</label>
+                    <input type="number" id="localPort" required min="1" max="65535">
+                </div>
+
+                <button type="submit" id="submitBtn" class="primary-button" disabled>Deploy Application</button>
+            </form>
+        </div>
+    </template>
+
+    <script src="index.js"></script>
+</body>
+</html>
